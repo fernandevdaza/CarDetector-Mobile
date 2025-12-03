@@ -13,20 +13,25 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.example.cardetectormobile.data.local.SessionManager
 import com.example.cardetectormobile.data.network.RetrofitClient
+import com.example.cardetectormobile.di.AppContainer
 import com.example.cardetectormobile.domain.repository.AuthRepository
+import com.example.cardetectormobile.ui.navigation.AppNavigation
 import com.example.cardetectormobile.ui.screens.LoginScreen
+import com.example.cardetectormobile.ui.screens.OnboardingScreen
 import com.example.cardetectormobile.ui.theme.CarDetectorMobileTheme
 import com.example.cardetectormobile.ui.viewmodel.LoginViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val sessionManager = SessionManager(applicationContext)
-        val apiService = RetrofitClient.instance
-        val repository = AuthRepository(apiService)
-        val viewModel = LoginViewModel(repository, sessionManager)
         enableEdgeToEdge()
+
+        val appContainer = AppContainer(applicationContext)
+
+        val token = appContainer.sessionManager.getToken()
+
+        val startDestination = if (!token.isNullOrBlank()) "home" else "onboarding"
+
         setContent {
             CarDetectorMobileTheme {
                 Scaffold (
@@ -36,12 +41,16 @@ class MainActivity : ComponentActivity() {
                     Box (
                         modifier = Modifier.fillMaxSize().padding(innerPadding)
                     ) {
-                        LoginScreen(
-                            viewModel = viewModel,
-                            onLoginSuccess = {
-                                println("Navegar a Home...")
-                            }
+                        AppNavigation(
+                            startDestination = startDestination,
+                            appContainer = appContainer
                         )
+//                        LoginScreen(
+//                            viewModel = viewModel,
+//                            onLoginSuccess = {
+//                                println("Navegar a Home...")
+//                            }
+//                        )
                     }
 
                 }

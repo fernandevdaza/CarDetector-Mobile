@@ -12,7 +12,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.cardetectormobile.ui.viewmodel.LoginUiState
 import com.example.cardetectormobile.ui.viewmodel.LoginViewModel
-// Importa tu ViewModelFactory (lo veremos abajo, o inyección manual simple)
 
 @Composable
 fun LoginScreen(

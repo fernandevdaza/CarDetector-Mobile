@@ -34,25 +34,14 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             CarDetectorMobileTheme {
-                Scaffold (
-                    containerColor = MaterialTheme.colorScheme.background,
+                Surface(
+                    color = MaterialTheme.colorScheme.background,
                     modifier = Modifier.fillMaxSize()
-                ) { innerPadding ->
-                    Box (
-                        modifier = Modifier.fillMaxSize().padding(innerPadding)
-                    ) {
+                ) {
                         AppNavigation(
                             startDestination = startDestination,
                             appContainer = appContainer
                         )
-//                        LoginScreen(
-//                            viewModel = viewModel,
-//                            onLoginSuccess = {
-//                                println("Navegar a Home...")
-//                            }
-//                        )
-                    }
-
                 }
             }
         }

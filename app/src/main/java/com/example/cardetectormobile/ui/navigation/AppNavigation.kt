@@ -52,6 +52,9 @@ fun AppNavigation(
                     navController.navigate("home"){
                         popUpTo("onboarding"){ inclusive = true}
                     }
+                },
+                onBackClick = {
+                    navController.popBackStack()
                 }
             )
         }
@@ -73,13 +76,18 @@ fun AppNavigation(
                     navController.navigate("home") {
                         popUpTo("onboarding") { inclusive = true }
                     }
+                },
+                onBackClick = {
+                    navController.popBackStack()
                 }
             )
         }
 
         composable("home"){
             HomeScreen(
+                appContainer = appContainer,
                 onLogoutClick = {
+                    appContainer.sessionManager.clearSession()
                     navController.navigate("onboarding"){
                         popUpTo(0)
                     }

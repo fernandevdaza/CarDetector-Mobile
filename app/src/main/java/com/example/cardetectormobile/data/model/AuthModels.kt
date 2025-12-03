@@ -7,3 +7,11 @@ data class LoginResponse(
     @SerializedName("token_type") val tokenType: String,
     val role: String
 )
+
+data class RegisterRequest(
+    val email: String,
+    val first_name: String,
+    val last_name: String,
+    val password: String,
+    val role: String
+)

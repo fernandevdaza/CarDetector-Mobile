@@ -9,9 +9,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.cardetectormobile.di.AppContainer
+import com.example.cardetectormobile.ui.screens.HomeScreen
 import com.example.cardetectormobile.ui.screens.LoginScreen
 import com.example.cardetectormobile.ui.screens.OnboardingScreen
+import com.example.cardetectormobile.ui.screens.RegisterScreen
 import com.example.cardetectormobile.ui.viewmodel.LoginViewModel
+import com.example.cardetectormobile.ui.viewmodel.RegisterViewModel
 
 @Composable
 fun AppNavigation(
@@ -54,11 +57,34 @@ fun AppNavigation(
         }
 
         composable("register"){
-            Text("¡Bienvenido! Aquí iría la pantalla de registro")
+            val registerViewModel: RegisterViewModel = viewModel(
+                factory = viewModelFactory {
+                    initializer {
+                        RegisterViewModel(
+                            repository = appContainer.authRepository,
+                            sessionManager = appContainer.sessionManager
+                        )
+                    }
+                }
+            )
+            RegisterScreen(
+                viewModel = registerViewModel,
+                onRegisterSuccess = {
+                    navController.navigate("home") {
+                        popUpTo("onboarding") { inclusive = true }
+                    }
+                }
+            )
         }
 
         composable("home"){
-            Text("¡Bienvenido! Aquí iría la pantalla principal")
+            HomeScreen(
+                onLogoutClick = {
+                    navController.navigate("onboarding"){
+                        popUpTo(0)
+                    }
+                }
+            )
         }
     }
 

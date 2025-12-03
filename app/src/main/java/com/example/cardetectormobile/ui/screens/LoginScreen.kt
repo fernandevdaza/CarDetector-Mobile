@@ -37,7 +37,7 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "Car Detector Mobile", style = MaterialTheme.typography.headlineMedium)
+        Text(text = "Inicia Sesión", style = MaterialTheme.typography.headlineMedium)
 
         Spacer(modifier = Modifier.height(32.dp))
 

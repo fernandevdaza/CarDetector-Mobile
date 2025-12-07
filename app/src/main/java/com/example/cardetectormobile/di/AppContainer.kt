@@ -4,11 +4,14 @@ import android.content.Context
 import com.example.cardetectormobile.data.local.SessionManager
 import com.example.cardetectormobile.data.network.RetrofitClient
 import com.example.cardetectormobile.domain.repository.AuthRepository
+import com.example.cardetectormobile.domain.repository.CarRepository
 
 class AppContainer(context: Context){
     val sessionManager = SessionManager(context)
     val apiService = RetrofitClient.instance
 
     val authRepository = AuthRepository(apiService)
+
+    var carRepository = CarRepository(apiService)
 
 }

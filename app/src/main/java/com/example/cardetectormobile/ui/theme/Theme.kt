@@ -8,11 +8,11 @@ import androidx.compose.runtime.Composable
 
 // Definimos que el esquema oscuro use TUS colores
 private val DarkColorPalette = darkColorScheme(
-    background = MidnightBlue,      // Tu color 0F1123
-    surface = DarkSlate,            // Tu color 15172B
-    onBackground = PureWhite,       // Texto sobre fondo
+    background = WhiteSmoke,      // Tu color 0F1123
+    surface = PureWhite,            // Tu color 15172B
+    onBackground = BrightGray,       // Texto sobre fondo
     onSurface = MutedGray,          // Texto secundario sobre tarjetas
-    outline = SteelBlue,            // Bordes
+    outline = TransparentGray,            // Bordes
     primary = PrimaryBlue
 )
 

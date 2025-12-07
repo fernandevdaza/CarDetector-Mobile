@@ -1,6 +1,11 @@
 package com.example.cardetectormobile.ui.screens
 
 
+import android.net.Uri
+import com.example.cardetectormobile.utils.FileUtils
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,19 +20,86 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.cardetectormobile.ui.components.DetectionDetailField
+import com.example.cardetectormobile.ui.viewmodel.DetectionViewModel
+
 @Composable
-fun DetectionScreen(){
+fun DetectionScreen(
+    viewModel: DetectionViewModel
+){
+    val context = LocalContext.current
+    val fileUtils = remember { FileUtils(context) }
+    val uiState by viewModel.uiState.collectAsState()
+
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var showOptionalDialog by remember { mutableStateOf(false) }
+    var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
+
+    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) {
+        success ->
+        if (success && tempCameraUri != null){
+            imageUri = tempCameraUri
+            viewModel.uploadImage(tempCameraUri!!, context)
+        }
+    }
+
+    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {
+        uri ->
+        if (uri != null){
+            imageUri = uri
+            viewModel.uploadImage(uri, context)
+        }
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        isGranted ->
+        if (isGranted) {
+            val uri = fileUtils.createTempPictureUri()
+            tempCameraUri = uri
+            cameraLauncher.launch(uri)
+        }
+    }
+
+    if (showOptionalDialog){
+        AlertDialog(
+            onDismissRequest = { showOptionalDialog = false },
+            title = { Text("Seleccionar Imagen")},
+            text = { Text("¿Desde dónde quieres subir la foto?")},
+            confirmButton = {
+                TextButton(onClick = {
+                    showOptionalDialog = false
+                    galleryLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                }) { Text("Galería") }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showOptionalDialog = false
+                    permissionLauncher.launch(android.Manifest.permission.CAMERA)
+                }) { Text("Cámara")}
+            }
+
+        )
+    }
+
+
     var brand by remember { mutableStateOf("") }
     var model by remember { mutableStateOf("") }
     var year by remember { mutableStateOf("") }
@@ -48,35 +120,47 @@ fun DetectionScreen(){
                 .height(280.dp)
                 .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
                 .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
-                .clickable { /* Lógica para abrir galería/cámara */ },
+                .clickable { showOptionalDialog = true },
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = "Aún no se ha subido ninguna imagen",
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 14.sp
-            )
+            if (imageUri != null){
+                AsyncImage(
+                    model = imageUri,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.AddCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Toca para añadir foto")
+                }
+            }
+
+            if (uiState.isLoading) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            }
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
         DetectionDetailField(
             label = "Marca",
-            value = brand,
-            onValueChange = { brand = it }
+            value = uiState.result?.message?.brand ?: "---",
+            onValueChange = {}
         )
 
         DetectionDetailField(
             label = "Modelo",
-            value = model,
-            onValueChange = { model = it }
+            value = uiState.result?.message?.modelName ?: "---",
+            onValueChange = {}
         )
 
         DetectionDetailField(
             label = "Año aproximado",
-            value = year,
-            onValueChange = { year = it },
-            keyboardType = KeyboardType.Number
+            value = uiState.result?.message?.year?.toString() ?: "---",
+            onValueChange = { }
         )
     }
 }

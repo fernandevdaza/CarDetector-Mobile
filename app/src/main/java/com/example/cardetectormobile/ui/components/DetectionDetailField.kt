@@ -50,7 +50,7 @@ fun DetectionDetailField(
             enabled = false,
             onValueChange = onValueChange,
             textStyle = TextStyle(
-                color = Color.White,
+                color = Color.Black,
                 fontSize = 16.sp),
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             cursorBrush = SolidColor(Color.White), // Cursor blanco
@@ -66,7 +66,7 @@ fun DetectionDetailField(
                 ) {
                     if (value.isEmpty()) {
                         Text("---",
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = Color.Black
                     )
                     }
                     innerTextField()

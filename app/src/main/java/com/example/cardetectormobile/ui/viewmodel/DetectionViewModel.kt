@@ -100,4 +100,8 @@ class DetectionViewModel(
         outputStream.close()
         return tempFile
     }
+
+    fun clearState(){
+        _uiState.value = DetectionUiState()
+    }
 }

@@ -1,11 +1,13 @@
 package com.example.cardetectormobile.ui.screens
 
 
+import android.R
 import android.net.Uri
 import com.example.cardetectormobile.utils.FileUtils
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,21 +19,26 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
@@ -162,5 +169,33 @@ fun DetectionScreen(
             value = uiState.result?.message?.year?.toString() ?: "---",
             onValueChange = { }
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        val hasData = imageUri != null || uiState.result != null
+
+        OutlinedButton(
+            onClick = {
+                imageUri = null
+                viewModel.clearState()
+            },
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            enabled = hasData,
+
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = if (hasData)  Color.Black else MaterialTheme.colorScheme.outline,
+                containerColor = Color(0xFFE34F4F),
+                disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // Gris estándar
+            ),
+            border = if (hasData) {
+                BorderStroke(1.dp, MaterialTheme.colorScheme.error)
+            } else {
+                BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f))
+            }
+        ) {
+            Icon(Icons.Default.Delete, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Limpiar Todo", color = MaterialTheme.colorScheme.outline)
+        }
     }
 }

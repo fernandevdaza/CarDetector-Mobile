@@ -1,7 +1,7 @@
 package com.example.cardetectormobile.ui.viewmodel
 
 import android.content.Context
-import android.media.ExifInterface
+import androidx.exifinterface.media.ExifInterface
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -33,7 +33,7 @@ class DetectionViewModel(
     private val _uiState = MutableStateFlow(DetectionUiState())
     val uiState: StateFlow<DetectionUiState> = _uiState.asStateFlow()
 
-    fun uploadImage(uri: Uri, context: Context, lat: Double? = null, lon: Double? = null){
+    fun uploadImage(uri: Uri, context: Context){
         viewModelScope.launch {
             _uiState.value = DetectionUiState(isLoading = true)
 
@@ -45,10 +45,10 @@ class DetectionViewModel(
                 val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
                 val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
 
-                val latBody = lat?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
-                val lonBody = lon?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
+                val latBody = exifLat?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
+                val lonBody = exifLon?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
 
-                val response = repository.detectVehicle(body)
+                val response = repository.detectVehicle(body, latBody, lonBody)
 
                 if (response.isSuccessful && response.body() != null){
                     Log.d("DetectionVM", "Éxito: ${response.body()}")
@@ -78,7 +78,8 @@ class DetectionViewModel(
                 val exif = ExifInterface(inputStream)
                 val latLong = FloatArray(2)
 
-                // getLatLong devuelve true si encontró las coordenadas
+                latLong[0] = exif.getAttribute()
+
                 if (exif.getLatLong(latLong)) {
                     Pair(latLong[0].toDouble(), latLong[1].toDouble())
                 } else {

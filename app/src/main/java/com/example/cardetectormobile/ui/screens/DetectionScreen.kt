@@ -38,6 +38,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -125,6 +126,7 @@ fun DetectionScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(280.dp)
+                .clip(RoundedCornerShape(16.dp))
                 .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp))
                 .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
                 .clickable { showOptionalDialog = true },
@@ -135,13 +137,15 @@ fun DetectionScreen(
                     model = imageUri,
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Crop,
                 )
             } else {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     Icon(Icons.Default.AddCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Toca para añadir foto")
+                    Text("Toca para añadir una foto", color = MaterialTheme.colorScheme.onSurface)
                 }
             }
 
@@ -185,7 +189,7 @@ fun DetectionScreen(
             colors = ButtonDefaults.outlinedButtonColors(
                 contentColor = if (hasData)  Color.Black else MaterialTheme.colorScheme.outline,
                 containerColor = Color(0xFFE34F4F),
-                disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) // Gris estándar
+                disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
             ),
             border = if (hasData) {
                 BorderStroke(1.dp, MaterialTheme.colorScheme.error)
@@ -195,7 +199,7 @@ fun DetectionScreen(
         ) {
             Icon(Icons.Default.Delete, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Limpiar Todo", color = MaterialTheme.colorScheme.outline)
+            Text("Limpiar", color = MaterialTheme.colorScheme.outline)
         }
     }
 }

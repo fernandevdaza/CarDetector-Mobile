@@ -249,6 +249,7 @@ fun DetectionScreen(
             }
         ) {
             Icon(
+
                 Icons.Default.Delete,
                 contentDescription = null,
                 tint = if (hasData) Color.White else MaterialTheme.colorScheme.outline

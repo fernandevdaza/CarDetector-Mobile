@@ -160,7 +160,17 @@ fun HomeScreen(
                 }
 
                 composable(BottomNavItem.Map.route){
-                    MapScreen()
+                    val historyViewModel: HistoryViewModel = viewModel(
+                        factory =viewModelFactory {
+                            initializer {
+                                HistoryViewModel(
+                                    repository = appContainer.historyRepository,
+                                    sessionManager = appContainer.sessionManager
+                                )
+                            }
+                        }
+                    )
+                    MapScreen(viewModel = historyViewModel)
                 }
 
                 composable(BottomNavItem.Profile.route){

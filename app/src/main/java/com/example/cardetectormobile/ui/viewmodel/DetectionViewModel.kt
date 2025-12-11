@@ -136,8 +136,8 @@ class DetectionViewModel(
             brand = msg.brand,
             modelName = msg.modelName,
             year = msg.year,
-            lat = msg.lat,
-            lon = msg.lng,
+            lat = exifLat,
+            lon = exifLon,
             imageUri = imageUri
         )
 

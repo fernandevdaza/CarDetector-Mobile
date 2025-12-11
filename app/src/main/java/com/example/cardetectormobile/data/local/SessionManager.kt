@@ -9,15 +9,29 @@ class SessionManager(context: Context) {
 
     companion object {
         const val KEY_TOKEN = "jwt_token"
+        const val KEY_USER_ID = "user_id"
+        const val KEY_ROLE = "user_role"
     }
 
     fun saveToken(token: String) {
         prefs.edit { putString(KEY_TOKEN, token) }
     }
 
-    fun getToken(): String? {
-        return prefs.getString(KEY_TOKEN, null)
+    fun saveSession(token: String, userId: String, role: String) {
+        prefs.edit {
+            putString(KEY_TOKEN, token)
+            putString(KEY_USER_ID, userId)
+            putString(KEY_ROLE, role)
+        }
     }
+
+    fun getToken(): String? = prefs.getString(KEY_TOKEN, null)
+
+    fun getUserId(): String? = prefs.getString(KEY_USER_ID, null)
+
+    fun getRole(): String? = prefs.getString(KEY_ROLE, null)
+
+    fun isAdmin(): Boolean = getRole().equals("ADMIN", ignoreCase = true)
 
     fun clearSession() {
         prefs.edit { clear() }

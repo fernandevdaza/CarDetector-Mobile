@@ -5,9 +5,9 @@ import com.google.gson.annotations.SerializedName
 data class DetectionResponseItem(
     val brand: String,
     @SerializedName("model_name") val modelName: String,
-    val year: Int, // <--- CAMBIO IMPORTANTE: Int, no String
-    val lat: Float,
-    val lng: Float
+    val year: Int,
+    val lat: Double,
+    val lng: Double
 )
 
 data class MetadataResponseItem(

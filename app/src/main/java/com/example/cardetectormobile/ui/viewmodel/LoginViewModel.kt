@@ -1,6 +1,7 @@
 package com.example.cardetectormobile.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.example.cardetectormobile.data.local.SessionManager
 import com.example.cardetectormobile.domain.repository.AuthRepository
@@ -33,7 +34,10 @@ class LoginViewModel(
 
                 if (response.isSuccessful && response.body() != null) {
                     val token = response.body()!!.token
-                    sessionManager.saveToken(token)
+                    val userId = response.body()!!.userId
+                    val role = response.body()!!.role
+                    Log.d("Auth", "TokenResponse = $userId")
+                    sessionManager.saveSession(token, userId, role)
 
                     _uiState.value = LoginUiState.Success
                 } else {

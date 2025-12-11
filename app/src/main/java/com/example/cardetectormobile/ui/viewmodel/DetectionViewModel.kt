@@ -6,8 +6,12 @@ import android.util.Log
 import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.compose.material.icons.Icons
+import com.example.cardetectormobile.data.local.SessionManager
+import com.example.cardetectormobile.data.local.entity.DetectionHistoryEntity
 import com.example.cardetectormobile.data.model.DetectionResponse
 import com.example.cardetectormobile.domain.repository.CarRepository
+import com.example.cardetectormobile.domain.repository.HistoryRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,11 +27,13 @@ data class DetectionUiState(
     val isLoading: Boolean = false,
     val result: DetectionResponse? = null,
     val error: String? = null,
-    val metadataMissing: Boolean = false     // <- bandera para mostrar modal
+    val metadataMissing: Boolean = false
 )
 
 class DetectionViewModel(
-    private val repository: CarRepository
+    private val repository: CarRepository,
+    private val sessionManager: SessionManager,
+    private val historyRepository: HistoryRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DetectionUiState())
@@ -35,7 +41,6 @@ class DetectionViewModel(
 
     fun uploadImage(uri: Uri, context: Context) {
         viewModelScope.launch {
-            // limpiamos errores anteriores, empezamos loading
             _uiState.value = _uiState.value.copy(
                 isLoading = true,
                 error = null,
@@ -43,11 +48,9 @@ class DetectionViewModel(
             )
 
             try {
-                // 1) Leer lat/lon desde EXIF
                 val (exifLat, exifLon) = getExifLocation(context, uri)
                 Log.d("DetectionVM", "EXIF lat=$exifLat lon=$exifLon")
 
-                // 2) Si no hay metadata => NO llamamos al backend
                 if (exifLat == null || exifLon == null) {
                     Log.w("DetectionVM", "Imagen sin metadata GPS; no se enviará al backend")
                     _uiState.value = DetectionUiState(
@@ -59,10 +62,8 @@ class DetectionViewModel(
                     return@launch
                 }
 
-                // 3) Pasar Uri -> File temporal
                 val file = uriToFile(context, uri)
 
-                // 4) Construir cuerpo multipart
                 val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
                 val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
 
@@ -73,14 +74,23 @@ class DetectionViewModel(
 
                 Log.d("DetectionVM", "Voy a enviar latBody=$exifLat lonBody=$exifLon")
 
-                // 5) Llamar al backend
                 val response = repository.detectVehicle(body, latBody, lonBody)
 
                 if (response.isSuccessful && response.body() != null) {
-                    Log.d("DetectionVM", "Éxito: ${response.body()}")
+                    val detectionResponse = response.body()!!
+                    Log.d("DetectionVM", "Éxito: $detectionResponse")
+
+                    // Guardar en historial con userId
+                    saveDetectionToHistory(
+                        response = detectionResponse,
+                        exifLat = exifLat,
+                        exifLon = exifLon,
+                        imageUri = uri.toString()
+                    )
+
                     _uiState.value = DetectionUiState(
                         isLoading = false,
-                        result = response.body(),
+                        result = detectionResponse,
                         error = null,
                         metadataMissing = false
                     )
@@ -107,10 +117,33 @@ class DetectionViewModel(
         }
     }
 
-    /**
-     * Lee lat/lon del EXIF del Uri (Storage Access Framework / cámara).
-     * Si no hay coordenadas, devuelve (null, null).
-     */
+    private suspend fun saveDetectionToHistory(
+        response: DetectionResponse,
+        exifLat: Double,
+        exifLon: Double,
+        imageUri: String
+    ) {
+        val userId = sessionManager.getUserId()
+            ?: run {
+                Log.w("DetectionVM", "No hay userId en SessionManager; no guardo historial")
+                return
+            }
+
+        val msg = response.message
+
+        val entity = DetectionHistoryEntity(
+            userId = userId,
+            brand = msg.brand,
+            modelName = msg.modelName,
+            year = msg.year,
+            lat = msg.lat,
+            lon = msg.lng,
+            imageUri = imageUri
+        )
+
+        historyRepository.insertDetection(entity)
+    }
+
     private fun getExifLocation(context: Context, uri: Uri): Pair<Double?, Double?> {
         return try {
             context.contentResolver.openInputStream(uri)?.use { inputStream ->
@@ -141,9 +174,6 @@ class DetectionViewModel(
         }
     }
 
-    /**
-     * Copia el contenido del Uri a un File temporal en cacheDir.
-     */
     private fun uriToFile(context: Context, uri: Uri): File {
         val inputStream = context.contentResolver.openInputStream(uri)
             ?: throw IllegalStateException("No se pudo abrir InputStream para uri=$uri")

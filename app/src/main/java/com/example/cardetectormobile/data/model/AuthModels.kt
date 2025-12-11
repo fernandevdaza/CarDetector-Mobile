@@ -3,8 +3,16 @@ package com.example.cardetectormobile.data.model
 import com.google.gson.annotations.SerializedName
 
 data class LoginResponse(
-    @SerializedName("access_token") val token: String,
-    @SerializedName("token_type") val tokenType: String,
+    @SerializedName("access_token")
+    val token: String,
+
+    @SerializedName("token_type")
+    val tokenType: String,
+
+    @SerializedName("user_id")
+    val userId: String,
+
+    @SerializedName("role")
     val role: String
 )
 

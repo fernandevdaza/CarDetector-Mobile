@@ -40,6 +40,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.cardetectormobile.di.AppContainer
 import com.example.cardetectormobile.ui.navigation.BottomNavItem
+import com.example.cardetectormobile.ui.viewmodel.HistoryViewModel
 import com.example.cardetectormobile.ui.viewmodel.DetectionViewModel
 import kotlinx.coroutines.selects.select
 
@@ -131,16 +132,31 @@ fun HomeScreen(
                         factory = viewModelFactory {
                             initializer {
                                 DetectionViewModel(
-                                    repository = appContainer.carRepository
+                                    repository = appContainer.carRepository,
+                                    historyRepository = appContainer.historyRepository,
+                                    sessionManager = appContainer.sessionManager
                                 )
                             }
                         }
                     )
+
                     DetectionScreen(viewModel = detectionViewModel)
                 }
 
                 composable(BottomNavItem.History.route){
-                    HistoryScreen()
+                    val historyViewModel: HistoryViewModel = viewModel(
+                        factory =viewModelFactory {
+                            initializer {
+                                HistoryViewModel(
+                                    repository = appContainer.historyRepository,
+                                    sessionManager = appContainer.sessionManager
+                                )
+                            }
+                        }
+                    )
+                    HistoryScreen(
+                        viewModel = historyViewModel,
+                        )
                 }
 
                 composable(BottomNavItem.Map.route){

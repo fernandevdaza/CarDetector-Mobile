@@ -2,19 +2,35 @@ package com.example.cardetectormobile.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.cardetectormobile.ui.components.ProfileScreenCard
 import com.example.cardetectormobile.ui.viewmodel.ProfileViewModel
+import java.util.Locale
 
 @Composable
 fun ProfileScreen(
@@ -31,123 +47,89 @@ fun ProfileScreen(
             .background(MaterialTheme.colorScheme.background)
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-
-        // =========== CARD: INFO BÁSICA DE CUENTA ===========
-        Card(
-            modifier = Modifier
-                .fillMaxWidth(),
-            shape = MaterialTheme.shapes.large,
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = uiState.userId?.let { "Usuario $it" } ?: "Usuario",
-                    style = MaterialTheme.typography.titleMedium
-                )
-
-                Text(
-                    text = "ID: ${uiState.userId ?: "---"}",
-                    style = MaterialTheme.typography.bodySmall
-                )
-
-                Text(
-                    text = "Rol: ${uiState.role ?: "---"}",
-                    style = MaterialTheme.typography.bodySmall
+            Box(
+            ){
+                Icon(
+                    Icons.Default.AccountCircle,
+                    contentDescription = "Account Icon",
+                    modifier = Modifier.size(80.dp),
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
-        }
-
-        // =========== CARD: ACTIVIDAD ===========
-        Card(
-            modifier = Modifier
-                .fillMaxWidth(),
-            shape = MaterialTheme.shapes.large,
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text("Actividad", style = MaterialTheme.typography.titleMedium)
-
-                Text(
-                    text = "Detecciones totales: ${uiState.totalDetections}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-
-                Text(
-                    text = "Última detección: ${uiState.lastDetectionTime ?: "—"}",
-                    style = MaterialTheme.typography.bodySmall
-                )
-
-                if (uiState.lastLat != null && uiState.lastLon != null) {
+            Box{
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     Text(
-                        text = "Última ubicación: " +
-                                "Lat %.5f, Lon %.5f".format(uiState.lastLat, uiState.lastLon),
+                        text = "${uiState.firstName ?: "Usuario"} ${uiState.lastName ?: "Desconocido"}".trim(),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Rol: ${
+                            uiState.role?.replaceFirstChar {
+                                if (it.isLowerCase()) it.titlecase(
+                                    Locale.getDefault()
+                                ) else it.toString()
+                            } ?: "---"}",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
         }
+        ProfileScreenCard(
+            content = "Datos Personales",
+            icon = Icons.Default.Info,
+            iconContentDescription = "Personal Data Info"
+        )
+        ProfileScreenCard(
+            content = "Ver Actividad",
+            icon = Icons.Default.Menu,
+            iconContentDescription = "Personal Data Info"
+        )
+        ProfileScreenCard(
+            content = "Cambiar Tema",
+            icon = Icons.Default.Build,
+            iconContentDescription = "Personal Data Info"
+        )
+        ProfileScreenCard(
+            content = "Borrar Historial de Detecciones",
+            icon = Icons.Default.Delete,
+            iconContentDescription = "Personal Data Info"
+        )
+        ProfileScreenCard(
+            content = "Borrar Cuenta",
+            icon = Icons.Default.Close,
+            iconContentDescription = "Personal Data Info"
+        )
+        Spacer(modifier = Modifier.weight(1f))
 
-        // =========== CARD: ACCESOS RÁPIDOS ===========
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            shape = MaterialTheme.shapes.large,
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+            OutlinedButton(
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFE34F4F)
+                ),
+                onClick = {
+                    viewModel.logout()
+                    onLogoutClick()
+                },
+                modifier = Modifier.fillMaxWidth(),
             ) {
-
-                Text("Accesos rápidos", style = MaterialTheme.typography.titleMedium)
-
-                Button(
-                    onClick = onGoToHistory,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Ver historial de detecciones")
-                }
-
-                Button(
-                    onClick = onGoToMap,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Ver mapa de detecciones")
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                OutlinedButton(
-                    onClick = {
-                        viewModel.logout()
-                        onLogoutClick()
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Cerrar sesión")
-                }
+                Text(
+                    "Cerrar sesión",
+                    color = Color.White
+                )
             }
-        }
 
         if (uiState.isLoading) {
-            // Overlay simple de "cargando" abajo del todo
             Text(
                 text = "Cargando...",
                 style = MaterialTheme.typography.bodySmall

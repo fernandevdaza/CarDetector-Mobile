@@ -1,5 +1,6 @@
 package com.example.cardetectormobile.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cardetectormobile.data.local.SessionManager
@@ -45,10 +46,16 @@ class RegisterViewModel(
               val loginResponse = repository.login(email, password)
 
               if (loginResponse.isSuccessful && loginResponse.body() != null) {
-                  val token = loginResponse.body()!!.token
-                  sessionManager.saveToken(token)
+                      val token = loginResponse.body()!!.token
+                      val userId = loginResponse.body()!!.userId
+                      val role = loginResponse.body()!!.role
+                      val firstName = loginResponse.body()!!.firstName
+                      val lastName = loginResponse.body()!!.lastName
+                      val email = loginResponse.body()!!.email
+                      Log.d("Auth", "TokenResponse = $userId")
+                      sessionManager.saveSession(token, userId, role, firstName, lastName, email)
 
-                  _uiState.value = RegisterUiState.Success
+                      _uiState.value = RegisterUiState.Success
               } else {
                   _uiState.value = RegisterUiState.Error("Hubo un problema al iniciar sesión")
               }

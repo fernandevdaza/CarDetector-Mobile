@@ -16,6 +16,9 @@ data class ProfileUiState(
     val isLoading: Boolean = true,
     val userId: String? = null,
     val role: String? = null,
+    val email: String? = null,
+    val firstName: String? = null,
+    val lastName: String? = null,
     val totalDetections: Int = 0,
     val lastDetectionTime: String? = null,
     val lastLat: Double? = null,
@@ -41,6 +44,9 @@ class ProfileViewModel(
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
 
             val userId = sessionManager.getUserId()
+            val email = sessionManager.getEmail()
+            val firstName = sessionManager.getFirstName()
+            val lastName = sessionManager.getLastName()
             val role = sessionManager.getRole()
 
             if (userId == null) {
@@ -63,6 +69,9 @@ class ProfileViewModel(
                     isLoading = false,
                     userId = userId,
                     role = role,
+                    email = email,
+                    firstName = firstName,
+                    lastName = lastName,
                     totalDetections = total,
                     lastDetectionTime = lastTime,
                     lastLat = lastLat,
@@ -74,6 +83,9 @@ class ProfileViewModel(
                     isLoading = false,
                     userId = userId,
                     role = role,
+                    email = email,
+                    firstName = firstName,
+                    lastName = lastName,
                     errorMessage = e.message ?: "Error al cargar el panel de usuario"
                 )
             }

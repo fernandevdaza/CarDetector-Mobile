@@ -35,7 +35,11 @@ fun OnboardingScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Text(text = "Car Detector Mobile", style = MaterialTheme.typography.headlineMedium)
+                Text(
+                    text = "Car Detector Mobile",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
 
                 Spacer(modifier = Modifier.height(32.dp))
 
@@ -58,7 +62,8 @@ fun OnboardingScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 32.dp)
                 ) {
-                    Text("Registrarse")
+                    Text("Registrarse",
+                        color = MaterialTheme.colorScheme.onSurface)
                 }
             }
         }

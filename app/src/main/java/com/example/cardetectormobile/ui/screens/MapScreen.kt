@@ -84,7 +84,8 @@ fun MapScreen(
                 Text(
                     text = "No hay detecciones con ubicación para mostrar.",
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)).padding(8.dp)
+                    modifier = Modifier.padding(8.dp),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         } else {

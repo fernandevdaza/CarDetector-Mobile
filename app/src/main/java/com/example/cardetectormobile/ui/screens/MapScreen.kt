@@ -201,13 +201,14 @@ private fun OsmMap(
             Configuration.getInstance().load(appContext, prefs)
             Configuration.getInstance().userAgentValue = appContext.packageName
 
+
+
             MapView(ctx).apply {
                 setTileSource(TileSourceFactory.MAPNIK)
                 setMultiTouchControls(true)
 
                 setBackgroundColor(Color.WHITE)
-                overlayManager.tilesOverlay.loadingBackgroundColor = Color.WHITE
-                overlayManager.tilesOverlay.loadingLineColor = Color.WHITE
+
                 if (detections.isNotEmpty()) {
                     val first = detections.first()
                     val startLat = first.lat ?: 0.0
@@ -220,28 +221,31 @@ private fun OsmMap(
         update = { mapView ->
             mapView.overlays.clear()
 
-            detections.forEach { det ->
-                val lat = det.lat ?: return@forEach
-                val lon = det.lon ?: return@forEach
+            if (detections.isNotEmpty()) {
+                detections.forEach { det ->
+                    val lat = det.lat ?: return@forEach
+                    val lon = det.lon ?: return@forEach
 
-                val marker = Marker(mapView).apply {
-                    position = GeoPoint(lat, lon)
-                    title = "${det.brand} ${det.modelName}"
-                    subDescription = det.year?.let { "Año aprox.: $it" } ?: "Año desconocido"
-                    setOnMarkerClickListener { m, _ ->
-                        onMarkerSelected(lat, lon)
-                        mapView.controller.animateTo(m.position)
-                        true
+                    val marker = Marker(mapView).apply {
+                        position = GeoPoint(lat, lon)
+                        title = "${det.brand} ${det.modelName}"
+                        subDescription = det.year?.let { "Año aprox.: $it" } ?: "Año desconocido"
+                        setOnMarkerClickListener { m, _ ->
+                            onMarkerSelected(lat, lon)
+                            mapView.controller.animateTo(m.position)
+                            true
+                        }
                     }
-                }
 
-                mapView.overlays.add(marker)
+                    mapView.overlays.add(marker)
+                }
             }
 
             mapView.invalidate()
         }
     )
 }
+
 
 
 

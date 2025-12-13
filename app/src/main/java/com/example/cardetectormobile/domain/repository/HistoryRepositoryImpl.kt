@@ -30,4 +30,12 @@ class HistoryRepositoryImpl(
     override suspend fun clearAll() {
         detectionDao.clearAll()
     }
+
+    override suspend fun getDetectionsCountForUser(userId: String): Int {
+        return detectionDao.getDetectionsCountForUser(userId)
+    }
+
+    override suspend fun getLastDetectionForUser(userId: String): DetectionHistoryEntity? {
+        return detectionDao.getLastDetectionForUser(userId)
+    }
 }

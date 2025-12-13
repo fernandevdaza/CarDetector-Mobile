@@ -33,39 +33,39 @@ fun HistoryScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-        if (uiState.isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else if (uiState.detections.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Aún no tienes detecciones guardadas.", color = MaterialTheme.colorScheme.onSurface)
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(16.dp)
-            ) {
-                items(uiState.detections, key = { it.id }) { detection ->
-                    DetectionHistoryItem(
-                        detection = detection,
-                        onDelete = { viewModel.deleteDetection(detection.id) }
-                    )
-                }
+    if (uiState.isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    } else if (uiState.detections.isEmpty()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Aún no tienes detecciones guardadas.", color = MaterialTheme.colorScheme.onSurface)
+        }
+    } else {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(16.dp)
+        ) {
+            items(uiState.detections, key = { it.id }) { detection ->
+                DetectionHistoryItem(
+                    detection = detection,
+                    onDelete = { viewModel.deleteDetection(detection.id) }
+                )
             }
         }
     }
+}
 
 @Composable
 private fun DetectionHistoryItem(

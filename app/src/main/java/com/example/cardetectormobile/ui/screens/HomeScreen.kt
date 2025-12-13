@@ -42,13 +42,14 @@ import com.example.cardetectormobile.di.AppContainer
 import com.example.cardetectormobile.ui.navigation.BottomNavItem
 import com.example.cardetectormobile.ui.viewmodel.HistoryViewModel
 import com.example.cardetectormobile.ui.viewmodel.DetectionViewModel
+import com.example.cardetectormobile.ui.viewmodel.ProfileViewModel
 import kotlinx.coroutines.selects.select
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     appContainer: AppContainer,
-    onLogoutClick: () -> Unit
+    onLogoutClick: () -> Unit,
 ){
     val bottomNavController = rememberNavController()
     val items = listOf(
@@ -174,7 +175,36 @@ fun HomeScreen(
                 }
 
                 composable(BottomNavItem.Profile.route){
+                    val profileViewModel: ProfileViewModel = viewModel(
+                        factory =viewModelFactory {
+                            initializer {
+                                ProfileViewModel(
+                                    historyRepository = appContainer.historyRepository,
+                                    sessionManager = appContainer.sessionManager
+                                )
+                            }
+                        }
+                    )
                     ProfileScreen(
+                        viewModel = profileViewModel,
+                        onGoToHistory = {
+                                bottomNavController.navigate(BottomNavItem.History.route){
+                                    popUpTo(bottomNavController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                        },
+                        onGoToMap = {
+                            bottomNavController.navigate(BottomNavItem.Map.route){
+                                popUpTo(bottomNavController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
                         onLogoutClick = {
                             onLogoutClick()
                         }

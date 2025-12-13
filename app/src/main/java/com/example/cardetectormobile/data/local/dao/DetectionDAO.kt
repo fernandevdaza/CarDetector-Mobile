@@ -27,4 +27,10 @@ interface DetectionDao {
 
     @Query("DELETE FROM detection_history")
     suspend fun clearAll()
+
+    @Query("SELECT COUNT(*) FROM detection_history WHERE userId = :userId")
+    suspend fun getDetectionsCountForUser(userId: String): Int
+
+    @Query("SELECT * FROM detection_history WHERE userId = :userId ORDER BY createdAt DESC LIMIT 1")
+    suspend fun getLastDetectionForUser(userId: String): DetectionHistoryEntity?
 }

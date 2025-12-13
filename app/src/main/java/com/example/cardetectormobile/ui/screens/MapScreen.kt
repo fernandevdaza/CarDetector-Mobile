@@ -38,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 
 @Composable
 fun MapScreen(
@@ -170,6 +171,9 @@ private fun OsmMap(
     detections: List<DetectionHistoryEntity>,
     onMarkerSelected: (lat: Double, lon: Double) -> Unit
 ) {
+    // Detectamos si estamos en tema oscuro
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
     AndroidView(
         modifier = Modifier.fillMaxSize(),
         factory = { ctx ->
@@ -181,7 +185,9 @@ private fun OsmMap(
             MapView(ctx).apply {
                 setTileSource(TileSourceFactory.MAPNIK)
                 setMultiTouchControls(true)
-                setBackgroundColor(0xFFFFFFFF.toInt())
+                // Set default background to match theme (roughly) to avoid white flash
+                setBackgroundColor(if (isDark) 0xFF000000.toInt() else 0xFFFFFFFF.toInt())
+                
                 if (detections.isNotEmpty()) {
                     val first = detections.first()
                     val startLat = first.lat ?: 0.0
@@ -192,7 +198,33 @@ private fun OsmMap(
             }
         },
         update = { mapView ->
-            mapView.overlays.clear()
+            // --- Dark Mode Logic ---
+            val tilesOverlay = mapView.overlayManager.tilesOverlay
+            if (tilesOverlay != null) {
+                if (isDark) {
+                     // Invert colors to create a "Dark Mode" map
+                     val inverseMatrix = floatArrayOf(
+                         -1.0f, 0.0f, 0.0f, 0.0f, 255.0f,
+                         0.0f, -1.0f, 0.0f, 0.0f, 255.0f,
+                         0.0f, 0.0f, -1.0f, 0.0f, 255.0f,
+                         0.0f, 0.0f, 0.0f, 1.0f, 0.0f
+                     )
+                     tilesOverlay.setColorFilter(android.graphics.ColorMatrixColorFilter(inverseMatrix))
+                } else {
+                     tilesOverlay.setColorFilter(null)
+                }
+            }
+            
+            // --- Markers Logic ---
+            // Clear existing markers (keep tiles overlay!)
+            // Ideally we only remove Marker objects, but clearing and re-adding tiles is risky if not careful.
+            // standard approach: mapView.overlays.clear() clears EVERYTHING including tiles.
+            // But MapView usually re-adds the tile overlay automatically or we should preserve it.
+            // Actually, `mapView.overlays.clear()` removes the TilesOverlay too!
+            // We should NOT do clear(). We should remove only Markers.
+            
+            val overlaysToRemove = mapView.overlays.filterIsInstance<Marker>()
+            mapView.overlays.removeAll(overlaysToRemove)
 
             if (detections.isNotEmpty()) {
                 detections.forEach { det ->
@@ -202,7 +234,6 @@ private fun OsmMap(
                     val marker = Marker(mapView).apply {
                         position = GeoPoint(lat, lon)
                         title = "${det.brand} ${det.modelName}"
-                        // subDescription removed or kept? Keeping it simple.
                         
                         setOnMarkerClickListener { m, _ ->
                             onMarkerSelected(lat, lon)

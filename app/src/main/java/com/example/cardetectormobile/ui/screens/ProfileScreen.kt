@@ -104,10 +104,10 @@ fun ProfileScreen(
             onClick = onGoToActivity
         )
         ProfileScreenCard(
-            content = "Cambiar Tema",
+            content = if (uiState.isDarkTheme) "Cambiar a Modo Claro" else "Cambiar a Modo Oscuro",
             icon = Icons.Default.Edit,
-            iconContentDescription = "Personal Data Info",
-            onClick = {}
+            iconContentDescription = "Change Theme",
+            onClick = { viewModel.toggleTheme() }
         )
         if (uiState.role == "admin") {
             ProfileScreenCard(

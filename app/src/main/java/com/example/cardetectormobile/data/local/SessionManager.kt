@@ -3,6 +3,8 @@ package com.example.cardetectormobile.data.local
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class SessionManager(context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
@@ -18,7 +20,7 @@ class SessionManager(context: Context) {
         const val KEY_MAX_REQUESTS = "max_requests"
         const val KEY_DAILY_COUNT = "daily_count"
         const val KEY_LAST_REQUEST_DATE = "last_request_date"
-
+        const val KEY_IS_DARK_THEME = "is_dark_theme"
     }
 
     fun saveToken(token: String) {
@@ -65,6 +67,16 @@ class SessionManager(context: Context) {
 
     fun saveMaxRequests(max: Int) {
         prefs.edit { putInt(KEY_MAX_REQUESTS, max) }
+    }
+
+    fun isDarkTheme(): Boolean = prefs.getBoolean(KEY_IS_DARK_THEME, false)
+
+    private val _themeFlow = kotlinx.coroutines.flow.MutableStateFlow(isDarkTheme())
+    val themeFlow = _themeFlow.asStateFlow()
+
+    fun setDarkTheme(isDark: Boolean) {
+        prefs.edit { putBoolean(KEY_IS_DARK_THEME, isDark) }
+        _themeFlow.value = isDark
     }
 
     fun getDailyRequestsCount(): Int {

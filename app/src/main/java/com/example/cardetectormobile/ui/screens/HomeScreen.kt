@@ -100,7 +100,7 @@ fun HomeScreen(
                         Text(
                             text = currentTitle,
                             style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
                         )
                     },
                     navigationIcon = {
@@ -108,7 +108,7 @@ fun HomeScreen(
                     },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = Color.Black,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
                         navigationIconContentColor = Color.Black,
                         actionIconContentColor = Color.Black
                     )
@@ -125,7 +125,7 @@ fun HomeScreen(
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = Color.Black,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface,
                         navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
                         actionIconContentColor = MaterialTheme.colorScheme.onPrimary
                     )

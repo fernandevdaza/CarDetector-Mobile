@@ -24,7 +24,8 @@ data class ProfileUiState(
     val maxRequests: Int = 10,
     val dailyRequestsCount: Int = 0,
     val errorMessage: String? = null,
-    val updateSuccess: Boolean = false
+    val updateSuccess: Boolean = false,
+    val isDarkTheme: Boolean = false
 )
 
 class ProfileViewModel(
@@ -50,11 +51,13 @@ class ProfileViewModel(
             val lastName = sessionManager.getLastName()
             val role = sessionManager.getRole()
             val maxRequests = sessionManager.getMaxRequests()
+            val isDark = sessionManager.isDarkTheme()
 
             if (userId == null) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    errorMessage = "No hay sesión activa."
+                    errorMessage = "No hay sesión activa.",
+                    isDarkTheme = isDark
                 )
                 return@launch
             }
@@ -63,11 +66,6 @@ class ProfileViewModel(
                 val total = historyRepository.getDetectionsCountForUser(userId)
                 val lastDetection = historyRepository.getLastDetectionForUser(userId)
                 
-                // For this example, we'll assume daily requests count is just total for today. 
-                // Since we don't have a specific API for "daily requests" yet, we'll placeholder it 
-                // or just use total if appropriate, but the requirement implies a daily limit.
-                // For now, let's just assume 0 or implement a simple check if we had date overlap logic.
-                // Just mocking it as total % 10 for demo purposes or 0.
                 val dailyRequests = sessionManager.getDailyRequestsCount() 
 
                 _uiState.value = _uiState.value.copy(
@@ -81,15 +79,24 @@ class ProfileViewModel(
                     lastDetectionTime = lastDetection?.createdAt ?: 0,
                     maxRequests = maxRequests,
                     dailyRequestsCount = dailyRequests,
-                    errorMessage = null
+                    errorMessage = null,
+                    isDarkTheme = isDark
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    errorMessage = e.message ?: "Error al cargar el perfil"
+                    errorMessage = e.message ?: "Error al cargar el perfil",
+                    isDarkTheme = isDark
                 )
             }
         }
+    }
+    
+    fun toggleTheme() {
+        val current = _uiState.value.isDarkTheme
+        val new = !current
+        sessionManager.setDarkTheme(new)
+        _uiState.value = _uiState.value.copy(isDarkTheme = new)
     }
 
     fun updateUserData(firstName: String, lastName: String, email: String) {

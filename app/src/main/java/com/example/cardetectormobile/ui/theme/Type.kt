@@ -16,15 +16,13 @@ val CarDetectorTypography = Typography(
     bodyLarge = TextStyle(
         fontFamily = AppFontFamily,
         fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        color = PureWhite
+        fontSize = 16.sp
     ),
     // Estilo para las etiquetas (MARCA, MODELO)
     labelSmall = TextStyle(
         fontFamily = AppFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
-        letterSpacing = 1.sp, // Espaciado entre letras como en tu diseño
-        color = MutedGray
+        letterSpacing = 1.sp // Espaciado entre letras como en tu diseño
     )
 )

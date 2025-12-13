@@ -21,6 +21,9 @@ import com.example.cardetectormobile.ui.screens.OnboardingScreen
 import com.example.cardetectormobile.ui.theme.CarDetectorMobileTheme
 import com.example.cardetectormobile.ui.viewmodel.LoginViewModel
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +36,8 @@ class MainActivity : ComponentActivity() {
         val startDestination = if (!token.isNullOrBlank()) "home" else "onboarding"
 
         setContent {
-            CarDetectorMobileTheme {
+            val isDarkTheme by appContainer.sessionManager.themeFlow.collectAsState()
+            CarDetectorMobileTheme(darkTheme = isDarkTheme) {
                 Surface(
                     color = MaterialTheme.colorScheme.background,
                     modifier = Modifier.fillMaxSize()

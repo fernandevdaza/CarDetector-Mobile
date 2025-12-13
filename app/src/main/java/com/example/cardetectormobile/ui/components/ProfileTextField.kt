@@ -23,12 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.util.Locale
 
-//val BgDark = Color(0xFF0F1123)       // Fondo principal
-//val BgInput = Color(0xFF15172B)      // Fondo de tarjetas/inputs
-//val StrokeColor = Color(0xFF2A2D45)  // Borde sutil
-//val TextSecondary = Color(0xFF8F9BB3)// Color de etiquetas
-//val TextPrimary = Color.White
-
 @Composable
 fun ProfileTextField(
     label: String,
@@ -50,10 +44,10 @@ fun ProfileTextField(
             enabled = true,
             onValueChange = onValueChange,
             textStyle = TextStyle(
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 16.sp),
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-            cursorBrush = SolidColor(Color.White), // Cursor blanco
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
             decorationBox = { innerTextField ->
                 Row(
                     modifier = Modifier
@@ -66,7 +60,7 @@ fun ProfileTextField(
                 ) {
                     if (value.isEmpty()) {
                         Text("---",
-                            color = Color.Black
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                     innerTextField()

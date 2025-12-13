@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.text.font.FontWeight
 import com.example.cardetectormobile.ui.components.BackButton
 import com.example.cardetectormobile.ui.viewmodel.LoginUiState
 import com.example.cardetectormobile.ui.viewmodel.LoginViewModel
@@ -61,7 +62,8 @@ fun LoginScreen(
                 Text(
                     text = "Inicia Sesión",
                     style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Bold
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))

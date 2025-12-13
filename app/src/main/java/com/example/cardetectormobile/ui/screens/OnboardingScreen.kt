@@ -1,73 +1,120 @@
 package com.example.cardetectormobile.ui.screens
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.cardetectormobile.R
 
 @Composable
 fun OnboardingScreen(
     onLoginClick: () -> Unit,
     onRegisterClick: () -> Unit,
-){
+) {
+    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    val logoRes = if (isDark) R.drawable.logo_dark else R.drawable.logo_bright
+    
+    val alphaAnim = remember { Animatable(0f) }
+    
+    LaunchedEffect(Unit) {
+        alphaAnim.animateTo(1f, animationSpec = tween(durationMillis = 1000))
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Box(
-            modifier = Modifier.fillMaxSize().padding(innerPadding)
-        ){
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            contentAlignment = Alignment.Center
+        ) {
             Column(
-                modifier = Modifier.fillMaxSize().padding(32.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(32.dp)
+                    .alpha(alphaAnim.value),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Text(
-                    text = "Car Detector Mobile",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                // LOGO
+                Image(
+                    painter = painterResource(id = logoRes),
+                    contentDescription = "App Logo",
+                    modifier = Modifier
+                        .height(180.dp)
+                        .fillMaxWidth(),
+                    contentScale = ContentScale.Fit
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                // Welcome Text
+                Text(
+                    text = "Bienvenido",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Bold
+                )
+                
+                Text(
+                    text = "Detecta vehículos con IA",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    modifier = Modifier.padding(top = 8.dp)
+                )
 
+                Spacer(modifier = Modifier.height(48.dp))
+
+                // Buttons
                 Button(
-                    onClick = {
-                        onLoginClick()
-                    },
+                    onClick = onLoginClick,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 32.dp)
+                        .height(50.dp),
+                    shape = MaterialTheme.shapes.medium,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    )
                 ) {
-                    Text("Iniciar Sesión")
+                    Text(
+                        text = "Iniciar Sesión",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
+
                 Spacer(modifier = Modifier.height(16.dp))
+
                 OutlinedButton(
-                    onClick = {
-                        onRegisterClick()
-                    },
+                    onClick = onRegisterClick,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 32.dp)
+                        .height(50.dp),
+                    shape = MaterialTheme.shapes.medium,
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    )
                 ) {
-                    Text("Registrarse",
-                        color = MaterialTheme.colorScheme.onSurface)
+                    Text(
+                        text = "Registrarse",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
             }
         }
-
     }
 }
 

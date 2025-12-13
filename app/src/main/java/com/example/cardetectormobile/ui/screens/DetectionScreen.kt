@@ -45,26 +45,85 @@ fun DetectionScreen(
 
     // ===================== CÁMARA =====================
 
+    var capturedLocation by remember { mutableStateOf<android.location.Location?>(null) }
+    var isFetchingLocation by remember { mutableStateOf(false) }
+
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
         if (success && tempCameraUri != null) {
+            // INYECTAR METADATA (Solución Robustez)
+            capturedLocation?.let { loc ->
+                try {
+                    context.contentResolver.openFileDescriptor(tempCameraUri!!, "rw")?.use { pfd ->
+                        val exif = androidx.exifinterface.media.ExifInterface(pfd.fileDescriptor)
+                        exif.setLatLong(loc.latitude, loc.longitude)
+                        exif.saveAttributes()
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
             viewModel.uploadImage(tempCameraUri!!, context)
+        }
+        isFetchingLocation = false
+    }
+
+    fun requestLocationAndLaunchCamera() {
+        isFetchingLocation = true
+        val locationManager = context.getSystemService(android.content.Context.LOCATION_SERVICE) as android.location.LocationManager
+
+        try {
+            // Callback simple
+            val listener = object : android.location.LocationListener {
+                override fun onLocationChanged(location: android.location.Location) {
+                    locationManager.removeUpdates(this)
+                    capturedLocation = location
+                    
+                    // Launch Camera
+                    val uri = fileUtils.createTempPictureUri()
+                    tempCameraUri = uri
+                    cameraLauncher.launch(uri)
+                    isFetchingLocation = false // Camera has launched, but we define "fetching" as "fetching location". 
+                    // Actually we want to keep some loading state if needed, but the camera UI takes over.
+                }
+                override fun onStatusChanged(provider: String?, status: Int, extras: android.os.Bundle?) {}
+                override fun onProviderEnabled(provider: String) {}
+                override fun onProviderDisabled(provider: String) {}
+            }
+
+            val isGpsEnabled = locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER)
+            val isNetworkEnabled = locationManager.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER)
+
+            if (isGpsEnabled) {
+                // Request single update is cleaner if available (API 30+ has getCurrentLocation)
+                // We use requestLocationUpdates with cleanup for compatibility.
+                locationManager.requestLocationUpdates(android.location.LocationManager.GPS_PROVIDER, 1000L, 0f, listener)
+            } else if (isNetworkEnabled) {
+                locationManager.requestLocationUpdates(android.location.LocationManager.NETWORK_PROVIDER, 1000L, 0f, listener)
+            } else {
+                 Toast.makeText(context, "Por favor activa el GPS", Toast.LENGTH_SHORT).show()
+                 isFetchingLocation = false
+            }
+        } catch (e: SecurityException) {
+            Toast.makeText(context, "Error de permisos de ubicación", Toast.LENGTH_SHORT).show()
+            isFetchingLocation = false
         }
     }
 
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            val uri = fileUtils.createTempPictureUri()
-            tempCameraUri = uri
-            cameraLauncher.launch(uri)
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val cameraGranted = permissions[Manifest.permission.CAMERA] ?: false
+        val locationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
+
+        if (cameraGranted && locationGranted) {
+            requestLocationAndLaunchCamera()
         } else {
-            Toast.makeText(context, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Se requieren permisos de Cámara y Ubicación", Toast.LENGTH_LONG).show()
         }
     }
-
+    
     // ===================== GALERÍA (OPEN_DOCUMENT) =====================
 
     val galleryLauncher = rememberLauncherForActivityResult(
@@ -110,7 +169,10 @@ fun DetectionScreen(
             dismissButton = {
                 TextButton(onClick = {
                     showSourceDialog = false
-                    cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                    // Request BOTH permissions
+                    cameraPermissionLauncher.launch(
+                        arrayOf(Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION)
+                    )
                 }) {
                     Text("Cámara")
                 }
@@ -190,7 +252,7 @@ fun DetectionScreen(
                 }
             }
 
-            if (uiState.isLoading) {
+            if (uiState.isLoading || isFetchingLocation) {
                 CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         }

@@ -15,6 +15,7 @@ import com.example.cardetectormobile.domain.repository.HistoryRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -27,7 +28,8 @@ data class DetectionUiState(
     val isLoading: Boolean = false,
     val result: DetectionResponse? = null,
     val error: String? = null,
-    val metadataMissing: Boolean = false
+    val metadataMissing: Boolean = false,
+    val imageUri: String? = null
 )
 
 class DetectionViewModel(
@@ -39,12 +41,17 @@ class DetectionViewModel(
     private val _uiState = MutableStateFlow(DetectionUiState())
     val uiState: StateFlow<DetectionUiState> = _uiState.asStateFlow()
 
+    fun setImage(uri: Uri) {
+        _uiState.value = _uiState.value.copy(imageUri = uri.toString())
+    }
+
     fun uploadImage(uri: Uri, context: Context) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
                 isLoading = true,
                 error = null,
-                metadataMissing = false
+                metadataMissing = false,
+                imageUri = uri.toString()
             )
 
             try {
@@ -53,13 +60,30 @@ class DetectionViewModel(
 
                 if (exifLat == null || exifLon == null) {
                     Log.w("DetectionVM", "Imagen sin metadata GPS; no se enviará al backend")
-                    _uiState.value = DetectionUiState(
+                    _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         result = null,
                         error = null,
                         metadataMissing = true
                     )
                     return@launch
+                }
+
+                // Check request limit
+                val role = sessionManager.getRole()
+                if (role != null && !role.equals("ADMIN", ignoreCase = true)) {
+                    val maxRequests = sessionManager.getMaxRequests()
+                    val dailyRequests = sessionManager.getDailyRequestsCount()
+
+                    if (dailyRequests >= maxRequests) {
+                         _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            result = null,
+                            error = "Has alcanzado tu límite diario de $maxRequests detecciones.",
+                            metadataMissing = false
+                        )
+                        return@launch
+                    }
                 }
 
                 val file = uriToFile(context, uri)
@@ -87,8 +111,11 @@ class DetectionViewModel(
                         exifLon = exifLon,
                         imageUri = uri.toString()
                     )
+                    
+                    // Increment usage count
+                    sessionManager.incrementDailyRequests()
 
-                    _uiState.value = DetectionUiState(
+                    _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         result = detectionResponse,
                         error = null,
@@ -98,7 +125,7 @@ class DetectionViewModel(
                     val errorMsg =
                         "Error API: ${response.code()} - ${response.errorBody()?.string()}"
                     Log.e("DetectionVM", errorMsg)
-                    _uiState.value = DetectionUiState(
+                    _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         result = null,
                         error = "Error: ${response.code()} - No se puede detectar",
@@ -107,7 +134,7 @@ class DetectionViewModel(
                 }
             } catch (e: Exception) {
                 Log.e("DetectionVM", "Excepción crítica: ${e.message}", e)
-                _uiState.value = DetectionUiState(
+                _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     result = null,
                     error = e.message ?: "Error desconocido",

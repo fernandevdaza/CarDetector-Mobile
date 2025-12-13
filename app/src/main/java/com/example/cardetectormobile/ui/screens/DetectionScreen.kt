@@ -38,8 +38,8 @@ fun DetectionScreen(
     val context = LocalContext.current
     val fileUtils = remember { FileUtils(context) }
     val uiState by viewModel.uiState.collectAsState()
+    val imageUri = uiState.imageUri?.let { Uri.parse(it) }
 
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
     var showSourceDialog by remember { mutableStateOf(false) }
     var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
 
@@ -49,7 +49,6 @@ fun DetectionScreen(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
         if (success && tempCameraUri != null) {
-            imageUri = tempCameraUri
             viewModel.uploadImage(tempCameraUri!!, context)
         }
     }
@@ -88,7 +87,6 @@ fun DetectionScreen(
                 // si no es persistible, no pasa nada
             }
 
-            imageUri = uri
             viewModel.uploadImage(uri, context)
         }
     }
@@ -126,7 +124,7 @@ fun DetectionScreen(
         AlertDialog(
             onDismissRequest = {
                 viewModel.clearMetadataMissingFlag()
-                imageUri = null
+                viewModel.clearState()
             },
             title = { Text("Foto no válida") },
             text = {
@@ -140,7 +138,7 @@ fun DetectionScreen(
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.clearMetadataMissingFlag()
-                    imageUri = null
+                    viewModel.clearState()
                 }) {
                     Text("Entendido")
                 }
@@ -232,7 +230,6 @@ fun DetectionScreen(
 
         OutlinedButton(
             onClick = {
-                imageUri = null
                 viewModel.clearState()
             },
             modifier = Modifier.align(Alignment.CenterHorizontally),

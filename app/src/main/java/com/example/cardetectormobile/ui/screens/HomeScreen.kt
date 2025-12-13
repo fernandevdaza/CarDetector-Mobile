@@ -39,11 +39,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.cardetectormobile.di.AppContainer
+import com.example.cardetectormobile.ui.components.BackButton
 import com.example.cardetectormobile.ui.navigation.BottomNavItem
+import com.example.cardetectormobile.ui.navigation.HomeRoutes
 import com.example.cardetectormobile.ui.viewmodel.HistoryViewModel
 import com.example.cardetectormobile.ui.viewmodel.DetectionViewModel
 import com.example.cardetectormobile.ui.viewmodel.ProfileViewModel
 import kotlinx.coroutines.selects.select
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,26 +65,72 @@ fun HomeScreen(
     val navBackStackEntry by bottomNavController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    val currentTitle = items.find { it.route == currentDestination?.route }?.title ?: "Car Detector"
+    val currentRoute = currentDestination?.route
+    
+    val currentTitle = when (currentRoute) {
+        HomeRoutes.PersonalData.route -> "Datos Personales"
+        HomeRoutes.Activity.route -> "Actividad"
+        HomeRoutes.RequestsConfig.route -> "Configurar Límite"
+        else -> items.find { it.route == currentRoute }?.title ?: "Car Detector"
+    }
+
+    val showBackButton = currentRoute in listOf(
+        HomeRoutes.PersonalData.route,
+        HomeRoutes.Activity.route,
+        HomeRoutes.RequestsConfig.route
+    )
+
+    val profileViewModel: ProfileViewModel = viewModel(
+        factory = viewModelFactory {
+            initializer {
+                ProfileViewModel(
+                    historyRepository = appContainer.historyRepository,
+                    sessionManager = appContainer.sessionManager,
+                    authRepository = appContainer.authRepository
+                )
+            }
+        }
+    )
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = currentTitle,
-                        style = MaterialTheme.typography.titleLarge,
-                        textAlign = TextAlign.Start,
-                        fontWeight = FontWeight.Bold
+            if (showBackButton) {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text(
+                            text = currentTitle,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    navigationIcon = {
+                        BackButton(onBackClick = { bottomNavController.popBackStack() })
+                    },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = Color.Black,
+                        navigationIconContentColor = Color.Black,
+                        actionIconContentColor = Color.Black
                     )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = Color.Black,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
-            )
+            } else {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = currentTitle,
+                            style = MaterialTheme.typography.titleLarge,
+                            textAlign = TextAlign.Start,
+                            fontWeight = FontWeight.Bold
+                        )
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = Color.Black,
+                        navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                        actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    )
+                )
+            }
         },
         bottomBar = {
             NavigationBar(
@@ -91,27 +140,47 @@ fun HomeScreen(
                 val navBackStackEntry by bottomNavController.currentBackStackEntryAsState()
                 val currentDestination = navBackStackEntry?.destination
                 items.forEach { screen ->
-                NavigationBarItem(
-                    icon = { Icon(screen.icon, contentDescription = screen.title)},
-                    label = { Text(screen.title, color = MaterialTheme.colorScheme.onSurface)},
-                    selected = currentDestination?.hierarchy?.any { it.route == screen.route} == true,
-                    onClick = {
-                        bottomNavController.navigate(screen.route){
-                            popUpTo(bottomNavController.graph.findStartDestination().id){
-                                saveState = true
+                    val isSelected = if (screen == BottomNavItem.Profile) {
+                        currentDestination?.hierarchy?.any { it.route == screen.route } == true ||
+                                currentRoute in listOf(
+                            HomeRoutes.PersonalData.route,
+                            HomeRoutes.Activity.route,
+                            HomeRoutes.RequestsConfig.route
+                        )
+                    } else {
+                        currentDestination?.hierarchy?.any { it.route == screen.route } == true
+                    }
+
+                    NavigationBarItem(
+                        icon = { Icon(screen.icon, contentDescription = screen.title) },
+                        label = { Text(screen.title, color = MaterialTheme.colorScheme.onSurface) },
+                        selected = isSelected,
+                        onClick = {
+                            if (screen == BottomNavItem.Profile && currentRoute in listOf(
+                                    HomeRoutes.PersonalData.route,
+                                    HomeRoutes.Activity.route,
+                                    HomeRoutes.RequestsConfig.route
+                                )
+                            ) {
+                                bottomNavController.popBackStack(BottomNavItem.Profile.route, inclusive = false)
+                            } else {
+                                bottomNavController.navigate(screen.route) {
+                                    popUpTo(bottomNavController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                            launchSingleTop = true
-                            restoreState = true
                             }
                         },
-                    colors = NavigationBarItemColors(
-                        selectedIconColor = Color.White,
-                        selectedTextColor = Color.Black,
-                        selectedIndicatorColor = Color.DarkGray,
-                        unselectedIconColor = MaterialTheme.colorScheme.onSurface,
-                        unselectedTextColor = MaterialTheme.colorScheme.onSurface,
-                        disabledIconColor = MaterialTheme.colorScheme.onSurface,
-                        disabledTextColor = MaterialTheme.colorScheme.onSurface
+                        colors = NavigationBarItemColors(
+                            selectedIconColor = Color.White,
+                            selectedTextColor = Color.Black,
+                            selectedIndicatorColor = Color.DarkGray,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurface,
+                            disabledIconColor = MaterialTheme.colorScheme.onSurface,
+                            disabledTextColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
                 }
@@ -175,26 +244,16 @@ fun HomeScreen(
                 }
 
                 composable(BottomNavItem.Profile.route){
-                    val profileViewModel: ProfileViewModel = viewModel(
-                        factory =viewModelFactory {
-                            initializer {
-                                ProfileViewModel(
-                                    historyRepository = appContainer.historyRepository,
-                                    sessionManager = appContainer.sessionManager
-                                )
-                            }
-                        }
-                    )
                     ProfileScreen(
                         viewModel = profileViewModel,
                         onGoToHistory = {
-                                bottomNavController.navigate(BottomNavItem.History.route){
-                                    popUpTo(bottomNavController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
+                            bottomNavController.navigate(BottomNavItem.History.route){
+                                popUpTo(bottomNavController.graph.findStartDestination().id) {
+                                    saveState = true
                                 }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
                         },
                         onGoToMap = {
                             bottomNavController.navigate(BottomNavItem.Map.route){
@@ -207,7 +266,37 @@ fun HomeScreen(
                         },
                         onLogoutClick = {
                             onLogoutClick()
+                        },
+                        onGoToPersonalData = {
+                            bottomNavController.navigate(HomeRoutes.PersonalData.route)
+                        },
+                        onGoToActivity = {
+                            bottomNavController.navigate(HomeRoutes.Activity.route)
+                        },
+                        onGoToRequestsConfig = {
+                            bottomNavController.navigate(HomeRoutes.RequestsConfig.route)
                         }
+                    )
+                }
+
+                composable(HomeRoutes.PersonalData.route) {
+                    PersonalDataScreen(
+                        viewModel = profileViewModel,
+                        onBackClick = { bottomNavController.popBackStack() }
+                    )
+                }
+
+                composable(HomeRoutes.Activity.route) {
+                    ActivityScreen(
+                        viewModel = profileViewModel,
+                        onBackClick = { bottomNavController.popBackStack() }
+                    )
+                }
+
+                composable(HomeRoutes.RequestsConfig.route) {
+                    RequestsConfigScreen(
+                        viewModel = profileViewModel,
+                        onBackClick = { bottomNavController.popBackStack() }
                     )
                 }
             }

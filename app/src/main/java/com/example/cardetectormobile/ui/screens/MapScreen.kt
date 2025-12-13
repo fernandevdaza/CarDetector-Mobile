@@ -1,17 +1,22 @@
 package com.example.cardetectormobile.ui.screens
 
 import android.content.Context
-import android.graphics.Color
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.zIndex 
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -32,6 +37,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun MapScreen(
@@ -40,24 +46,20 @@ fun MapScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // Solo detecciones con coordenadas válidas
     val detectionsWithLocation = remember(uiState.detections) {
         uiState.detections.filter { it.lat != null && it.lon != null }
     }
 
-    // Ubicación seleccionada al tocar un marcador
     var selectedLocation by remember {
         mutableStateOf<Pair<Double, Double>?>(null)
     }
 
-    // Detecciones asociadas a la ubicación seleccionada (misma zona)
     val detectionsAtSelectedLocation: List<DetectionHistoryEntity> =
         remember(selectedLocation, uiState.detections) {
             if (selectedLocation == null) emptyList()
             else {
                 val (selLat, selLon) = selectedLocation!!
-                val threshold = 0.0007  // un poco más “tolerante” (~70m aprox.)
-
+                val threshold = 0.0007
                 uiState.detections.filter { det ->
                     val lat = det.lat
                     val lon = det.lon
@@ -68,115 +70,89 @@ fun MapScreen(
             }
         }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp)
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
-        // ================== MAPA EN CARD ==================
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1.4f),
-            shape = MaterialTheme.shapes.large,
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        ) {
-            if (detectionsWithLocation.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "No hay detecciones con ubicación para mostrar.",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            } else {
-                OsmMap(
-                    context = context,
-                    detections = detectionsWithLocation,
-                    onMarkerSelected = { lat, lon ->
-                        selectedLocation = lat to lon
-                    }
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // ================== PANEL INFERIOR: AUTOS EN ESTA ZONA ==================
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            shape = MaterialTheme.shapes.large,
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(
+        // ================== MAPA (FULLSCREEN) ==================
+        if (detectionsWithLocation.isEmpty()) {
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(12.dp)
+                    .background(Color.White.copy(alpha = 0.1f)), 
+                contentAlignment = Alignment.Center
             ) {
-
                 Text(
-                    text = "Autos en esta zona",
-                    style = MaterialTheme.typography.titleMedium
+                    text = "No hay detecciones con ubicación para mostrar.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)).padding(8.dp)
                 )
-
-                if (selectedLocation != null) {
-                    val (lat, lon) = selectedLocation!!
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Lat: %.5f, Lon: %.5f".format(lat, lon),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                } else {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Toca un marcador en el mapa para ver los autos detectados en esa zona.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
+            }
+        } else {
+            OsmMap(
+                context = context,
+                detections = detectionsWithLocation,
+                onMarkerSelected = { lat, lon ->
+                    selectedLocation = lat to lon
                 }
+            )
+        }
 
-                Spacer(modifier = Modifier.height(8.dp))
-                Divider()
-                Spacer(modifier = Modifier.height(8.dp))
-
-                when {
-                    selectedLocation == null -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Sin zona seleccionada.",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
+        if (selectedLocation != null) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .padding(16.dp)
+                    .heightIn(max = 400.dp),
+                shape = MaterialTheme.shapes.large,
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            ) {
+                Box {
+                    androidx.compose.material3.IconButton(
+                        onClick = { selectedLocation = null },
+                        modifier = Modifier.align(Alignment.TopEnd).zIndex(1f)
+                    ) {
+                        androidx.compose.material3.Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.Close,
+                            contentDescription = "Cerrar"
+                        )
                     }
 
-                    detectionsAtSelectedLocation.isEmpty() -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "No se encontraron detecciones en esta zona.",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    }
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            text = "Vehículos en zona",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Lat: %.5f, Lon: %.5f".format(selectedLocation!!.first, selectedLocation!!.second),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        HorizontalDivider()
+                        Spacer(modifier = Modifier.height(8.dp))
 
-                    else -> {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(detectionsAtSelectedLocation, key = { it.id }) { det ->
-                                DetectionAtLocationItem(det)
+                        if (detectionsAtSelectedLocation.isEmpty()) {
+                             Text(
+                                 text = "No se encontraron detecciones exactas aquí.",
+                                 style = MaterialTheme.typography.bodyMedium,
+                                 modifier = Modifier.padding(vertical = 12.dp)
+                             )
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.weight(1f, fill = false),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(detectionsAtSelectedLocation, key = { it.id }) { det ->
+                                    DetectionAtLocationItem(det)
+                                }
                             }
                         }
                     }
@@ -201,14 +177,10 @@ private fun OsmMap(
             Configuration.getInstance().load(appContext, prefs)
             Configuration.getInstance().userAgentValue = appContext.packageName
 
-
-
             MapView(ctx).apply {
                 setTileSource(TileSourceFactory.MAPNIK)
                 setMultiTouchControls(true)
-
-                setBackgroundColor(Color.WHITE)
-
+                setBackgroundColor(0xFFFFFFFF.toInt())
                 if (detections.isNotEmpty()) {
                     val first = detections.first()
                     val startLat = first.lat ?: 0.0
@@ -229,18 +201,18 @@ private fun OsmMap(
                     val marker = Marker(mapView).apply {
                         position = GeoPoint(lat, lon)
                         title = "${det.brand} ${det.modelName}"
-                        subDescription = det.year?.let { "Año aprox.: $it" } ?: "Año desconocido"
+                        // subDescription removed or kept? Keeping it simple.
+                        
                         setOnMarkerClickListener { m, _ ->
                             onMarkerSelected(lat, lon)
                             mapView.controller.animateTo(m.position)
+                            mapView.controller.setZoom(18.0)
                             true
                         }
                     }
-
                     mapView.overlays.add(marker)
                 }
             }
-
             mapView.invalidate()
         }
     )
@@ -257,6 +229,9 @@ private fun DetectionAtLocationItem(
         modifier = Modifier
             .fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
@@ -266,7 +241,8 @@ private fun DetectionAtLocationItem(
         ) {
             Text(
                 text = "${detection.brand} ${detection.modelName}",
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             detection.year?.let {

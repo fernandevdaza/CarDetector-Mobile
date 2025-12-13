@@ -49,11 +49,12 @@ class RegisterViewModel(
                       val token = loginResponse.body()!!.token
                       val userId = loginResponse.body()!!.userId
                       val role = loginResponse.body()!!.role
+                      val refreshToken = loginResponse.body()!!.refreshToken
                       val firstName = loginResponse.body()!!.firstName
                       val lastName = loginResponse.body()!!.lastName
                       val email = loginResponse.body()!!.email
                       Log.d("Auth", "TokenResponse = $userId")
-                      sessionManager.saveSession(token, userId, role, firstName, lastName, email)
+                      sessionManager.saveSession(token, refreshToken, userId, role, firstName, lastName, email)
 
                       _uiState.value = RegisterUiState.Success
               } else {

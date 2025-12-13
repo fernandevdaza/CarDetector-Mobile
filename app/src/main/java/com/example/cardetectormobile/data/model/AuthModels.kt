@@ -6,6 +6,9 @@ data class LoginResponse(
     @SerializedName("access_token")
     val token: String,
 
+    @SerializedName("refresh_token")
+    val refreshToken: String,
+
     @SerializedName("token_type")
     val tokenType: String,
 

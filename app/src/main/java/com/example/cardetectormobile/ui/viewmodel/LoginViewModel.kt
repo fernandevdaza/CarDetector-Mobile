@@ -35,12 +35,13 @@ class LoginViewModel(
                 if (response.isSuccessful && response.body() != null) {
                     val token = response.body()!!.token
                     val userId = response.body()!!.userId
+                    val refreshToken = response.body()!!.refreshToken
                     val role = response.body()!!.role
                     val firstName = response.body()!!.firstName
                     val lastName = response.body()!!.lastName
                     val email = response.body()!!.email
                     Log.d("Auth", "FirstName = $firstName")
-                    sessionManager.saveSession(token, userId, role, firstName, lastName, email)
+                    sessionManager.saveSession(token, refreshToken, userId, role, firstName, lastName, email)
 
                     _uiState.value = LoginUiState.Success
                 } else {

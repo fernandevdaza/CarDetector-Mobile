@@ -10,6 +10,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
+import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.PUT
@@ -31,8 +32,19 @@ interface ApiService {
 
     @PUT("/auth/me")
     suspend fun updateUserData(
+        @Header("Authorization") token: String,
         @Body request: UpdateUserDataRequest
     ): Response<UpdateUserDataResponse>
+
+    @POST("/auth/refresh")
+    suspend fun refreshToken(
+        @retrofit2.http.Query("refresh_token") refreshToken: String
+    ): Response<LoginResponse>
+
+    @retrofit2.http.DELETE("/auth/me")
+    suspend fun deleteAccount(
+        @Header("Authorization") token: String
+    ): Response<Unit>
 
     @Multipart
     @POST("/inference/car-with-image")

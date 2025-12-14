@@ -36,7 +36,7 @@ fun ActivityScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         ActivityCard(
-            title = "Total Detections",
+            title = "Total de Detecciones",
             value = uiState.totalDetections.toString()
         )
 
@@ -47,14 +47,14 @@ fun ActivityScreen(
         }
 
         ActivityCard(
-            title = "Last Detection Time",
+            title = "Fecha y Hora de Ult. Detección",
             value = formattedDate
         )
 
         if (uiState.role != "ADMIN") {
             val remaining = (uiState.maxRequests - uiState.dailyRequestsCount).coerceAtLeast(0)
             ActivityCard(
-                title = "Requests Restantes (Hoy)",
+                title = "Detecciones Restantes (Hoy)",
                 value = "$remaining / ${uiState.maxRequests}"
             )
         }

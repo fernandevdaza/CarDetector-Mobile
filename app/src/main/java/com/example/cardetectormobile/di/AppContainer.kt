@@ -17,12 +17,7 @@ class AppContainer(context: Context){
             .authenticator(authenticator)
             .build()
 
-        retrofit2.Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8000")
-            .client(client)
-            .addConverterFactory(retrofit2.converter.gson.GsonConverterFactory.create())
-            .build()
-            .create(com.example.cardetectormobile.data.network.ApiService::class.java)
+        RetrofitClient.instance
     }
 
     val authRepository = AuthRepository(apiService)

@@ -23,6 +23,7 @@ import com.example.cardetectormobile.ui.viewmodel.LoginViewModel
 
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.foundation.isSystemInDarkTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,8 +36,13 @@ class MainActivity : ComponentActivity() {
 
         val startDestination = if (!token.isNullOrBlank()) "home" else "onboarding"
 
+
         setContent {
-            val isDarkTheme by appContainer.sessionManager.themeFlow.collectAsState()
+            val isDarkThemePreference by appContainer.sessionManager.themeFlow.collectAsState()
+            val isSystemDark = isSystemInDarkTheme()
+            
+            val isDarkTheme = isDarkThemePreference ?: isSystemDark
+            
             CarDetectorMobileTheme(darkTheme = isDarkTheme) {
                 Surface(
                     color = MaterialTheme.colorScheme.background,

@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cardetectormobile.ui.components.BackButton
@@ -75,7 +76,8 @@ fun PersonalDataScreen(
         ProfileTextField(
             label = "Email",
             value = email,
-            onValueChange = { email = it }
+            onValueChange = { email = it },
+            keyboardType = KeyboardType.Email
         )
 
         Spacer(modifier = Modifier.weight(1f))

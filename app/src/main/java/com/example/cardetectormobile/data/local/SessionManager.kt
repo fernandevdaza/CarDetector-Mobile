@@ -69,7 +69,13 @@ class SessionManager(context: Context) {
         prefs.edit { putInt(KEY_MAX_REQUESTS, max) }
     }
 
-    fun isDarkTheme(): Boolean = prefs.getBoolean(KEY_IS_DARK_THEME, false)
+    fun isDarkTheme(): Boolean? {
+        return if (prefs.contains(KEY_IS_DARK_THEME)) {
+            prefs.getBoolean(KEY_IS_DARK_THEME, false)
+        } else {
+            null
+        }
+    }
 
     private val _themeFlow = kotlinx.coroutines.flow.MutableStateFlow(isDarkTheme())
     val themeFlow = _themeFlow.asStateFlow()
@@ -107,6 +113,15 @@ class SessionManager(context: Context) {
     }
 
     fun clearSession() {
-        prefs.edit { clear() }
+        val maxRequests = getMaxRequests() // Persist max requests setting
+        val dailyCount = prefs.getInt(KEY_DAILY_COUNT, 0)
+        val lastDate = prefs.getString(KEY_LAST_REQUEST_DATE, "")
+
+        prefs.edit { 
+            clear() 
+            putInt(KEY_MAX_REQUESTS, maxRequests)
+            putInt(KEY_DAILY_COUNT, dailyCount)
+            putString(KEY_LAST_REQUEST_DATE, lastDate)
+        }
     }
 }

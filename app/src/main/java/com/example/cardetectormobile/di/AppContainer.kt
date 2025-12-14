@@ -15,9 +15,12 @@ class AppContainer(context: Context){
         val authenticator = com.example.cardetectormobile.data.network.TokenAuthenticator(sessionManager)
         val client = okhttp3.OkHttpClient.Builder()
             .authenticator(authenticator)
+            .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+            .writeTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
             .build()
 
-        RetrofitClient.instance
+        RetrofitClient.create(client)
     }
 
     val authRepository = AuthRepository(apiService)

@@ -51,7 +51,12 @@ fun ActivityScreen(
             value = formattedDate
         )
 
-        if (uiState.role != "ADMIN") {
+        if (uiState.role.equals("ADMIN", ignoreCase = true)) {
+            ActivityCard(
+                title = "Detecciones Restantes (Hoy)",
+                value = "Sin Límite"
+            )
+        } else {
             val remaining = (uiState.maxRequests - uiState.dailyRequestsCount).coerceAtLeast(0)
             ActivityCard(
                 title = "Detecciones Restantes (Hoy)",

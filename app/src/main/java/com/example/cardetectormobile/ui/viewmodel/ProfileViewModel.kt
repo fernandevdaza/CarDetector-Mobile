@@ -25,7 +25,7 @@ data class ProfileUiState(
     val dailyRequestsCount: Int = 0,
     val errorMessage: String? = null,
     val updateSuccess: Boolean = false,
-    val isDarkTheme: Boolean = false
+    val isDarkTheme: Boolean? = null
 )
 
 class ProfileViewModel(
@@ -92,11 +92,16 @@ class ProfileViewModel(
         }
     }
     
-    fun toggleTheme() {
-        val current = _uiState.value.isDarkTheme
-        val new = !current
-        sessionManager.setDarkTheme(new)
-        _uiState.value = _uiState.value.copy(isDarkTheme = new)
+    fun toggleTheme(isSystemDark: Boolean) {
+        val currentPreference = _uiState.value.isDarkTheme
+        
+        // If preference is null (system), the effective theme is isSystemDark.
+        // So if we toggle, we want the opposite of the effective theme.
+        val effectiveTheme = currentPreference ?: isSystemDark
+        val newTheme = !effectiveTheme
+        
+        sessionManager.setDarkTheme(newTheme)
+        _uiState.value = _uiState.value.copy(isDarkTheme = newTheme)
     }
 
     fun updateUserData(firstName: String, lastName: String, email: String) {

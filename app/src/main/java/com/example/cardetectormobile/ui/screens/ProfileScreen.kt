@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.example.cardetectormobile.ui.components.ProfileScreenCard
 import com.example.cardetectormobile.ui.viewmodel.ProfileViewModel
 import java.util.Locale
+import androidx.compose.foundation.isSystemInDarkTheme
 
 @Composable
 fun ProfileScreen(
@@ -41,6 +42,9 @@ fun ProfileScreen(
     onGoToRequestsConfig: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    
+    val isSystemDark = isSystemInDarkTheme()
+    val effectiveTheme = uiState.isDarkTheme ?: isSystemDark
 
     var showDeleteAccountDialog by remember { mutableStateOf(false) }
     var showDeleteHistoryDialog by remember { mutableStateOf(false) }
@@ -103,11 +107,15 @@ fun ProfileScreen(
             iconContentDescription = "Personal Data Info",
             onClick = onGoToActivity
         )
+
+
+// ...
+
         ProfileScreenCard(
-            content = if (uiState.isDarkTheme) "Cambiar a Modo Claro" else "Cambiar a Modo Oscuro",
+            content = if (effectiveTheme) "Cambiar a Modo Claro" else "Cambiar a Modo Oscuro",
             icon = Icons.Default.Edit,
             iconContentDescription = "Change Theme",
-            onClick = { viewModel.toggleTheme() }
+            onClick = { viewModel.toggleTheme(isSystemDark) }
         )
         if (uiState.role == "admin") {
             ProfileScreenCard(

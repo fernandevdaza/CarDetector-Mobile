@@ -69,7 +69,6 @@ class DetectionViewModel(
                     return@launch
                 }
 
-                // Check request limit
                 val role = sessionManager.getRole()
                 if (role != null && !role.equals("ADMIN", ignoreCase = true)) {
                     val maxRequests = sessionManager.getMaxRequests()
@@ -104,7 +103,6 @@ class DetectionViewModel(
                     val detectionResponse = response.body()!!
                     Log.d("DetectionVM", "Éxito: $detectionResponse")
 
-                    // Guardar en historial con userId
                     saveDetectionToHistory(
                         response = detectionResponse,
                         exifLat = exifLat,
@@ -112,7 +110,6 @@ class DetectionViewModel(
                         imageUri = uri.toString()
                     )
                     
-                    // Increment usage count
                     sessionManager.incrementDailyRequests()
 
                     _uiState.value = _uiState.value.copy(

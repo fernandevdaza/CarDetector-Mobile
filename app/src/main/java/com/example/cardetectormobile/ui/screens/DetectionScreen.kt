@@ -43,7 +43,6 @@ fun DetectionScreen(
     var showSourceDialog by remember { mutableStateOf(false) }
     var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
 
-    // ===================== CÁMARA =====================
 
     var capturedLocation by remember { mutableStateOf<android.location.Location?>(null) }
     var isFetchingLocation by remember { mutableStateOf(false) }
@@ -52,7 +51,6 @@ fun DetectionScreen(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
         if (success && tempCameraUri != null) {
-            // INYECTAR METADATA (Solución Robustez)
             capturedLocation?.let { loc ->
                 try {
                     context.contentResolver.openFileDescriptor(tempCameraUri!!, "rw")?.use { pfd ->
@@ -74,18 +72,15 @@ fun DetectionScreen(
         val locationManager = context.getSystemService(android.content.Context.LOCATION_SERVICE) as android.location.LocationManager
 
         try {
-            // Callback simple
             val listener = object : android.location.LocationListener {
                 override fun onLocationChanged(location: android.location.Location) {
                     locationManager.removeUpdates(this)
                     capturedLocation = location
                     
-                    // Launch Camera
                     val uri = fileUtils.createTempPictureUri()
                     tempCameraUri = uri
                     cameraLauncher.launch(uri)
-                    isFetchingLocation = false // Camera has launched, but we define "fetching" as "fetching location". 
-                    // Actually we want to keep some loading state if needed, but the camera UI takes over.
+                    isFetchingLocation = false
                 }
                 override fun onStatusChanged(provider: String?, status: Int, extras: android.os.Bundle?) {}
                 override fun onProviderEnabled(provider: String) {}
@@ -96,8 +91,6 @@ fun DetectionScreen(
             val isNetworkEnabled = locationManager.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER)
 
             if (isGpsEnabled) {
-                // Request single update is cleaner if available (API 30+ has getCurrentLocation)
-                // We use requestLocationUpdates with cleanup for compatibility.
                 locationManager.requestLocationUpdates(android.location.LocationManager.GPS_PROVIDER, 1000L, 0f, listener)
             } else if (isNetworkEnabled) {
                 locationManager.requestLocationUpdates(android.location.LocationManager.NETWORK_PROVIDER, 1000L, 0f, listener)
@@ -124,7 +117,6 @@ fun DetectionScreen(
         }
     }
     
-    // ===================== GALERÍA (OPEN_DOCUMENT) =====================
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -136,21 +128,18 @@ fun DetectionScreen(
                 Toast.LENGTH_SHORT
             ).show()
         } else {
-            // Opcional: mantener permiso persistente
             try {
                 context.contentResolver.takePersistableUriPermission(
                     uri,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION
                 )
             } catch (_: SecurityException) {
-                // si no es persistible, no pasa nada
             }
 
             viewModel.uploadImage(uri, context)
         }
     }
 
-    // ===================== DIALOGO SELECCIÓN DE FUENTE =====================
 
     if (showSourceDialog) {
         AlertDialog(
@@ -160,7 +149,6 @@ fun DetectionScreen(
             confirmButton = {
                 TextButton(onClick = {
                     showSourceDialog = false
-                    // Abrimos selector de documentos para imágenes (SAF)
                     galleryLauncher.launch(arrayOf("image/*"))
                 }) {
                     Text("Galería")
@@ -169,7 +157,6 @@ fun DetectionScreen(
             dismissButton = {
                 TextButton(onClick = {
                     showSourceDialog = false
-                    // Request BOTH permissions
                     cameraPermissionLauncher.launch(
                         arrayOf(Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION)
                     )
@@ -180,7 +167,6 @@ fun DetectionScreen(
         )
     }
 
-    // ===================== DIALOGO: FALTA METADATA =====================
 
     if (uiState.metadataMissing) {
         AlertDialog(
@@ -208,7 +194,6 @@ fun DetectionScreen(
         )
     }
 
-    // ===================== UI PRINCIPAL =====================
 
     Column(
         modifier = Modifier

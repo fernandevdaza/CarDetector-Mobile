@@ -17,7 +17,6 @@ object RetrofitClient {
             .create(ApiService::class.java)
     }
 
-    // Keep instance for backward compatibility if needed, but AppContainer should use create()
     val instance: ApiService by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)

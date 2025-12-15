@@ -109,7 +109,6 @@ fun ProfileScreen(
         )
 
 
-// ...
 
         ProfileScreenCard(
             content = if (effectiveTheme) "Cambiar a Modo Claro" else "Cambiar a Modo Oscuro",

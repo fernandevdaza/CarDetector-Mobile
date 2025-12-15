@@ -49,7 +49,6 @@ fun OnboardingScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                // LOGO
                 Image(
                     painter = painterResource(id = logoRes),
                     contentDescription = "App Logo",
@@ -59,7 +58,6 @@ fun OnboardingScreen(
                     contentScale = ContentScale.Fit
                 )
 
-                // Welcome Text
                 Text(
                     text = "Bienvenido",
                     style = MaterialTheme.typography.headlineLarge,
@@ -76,7 +74,6 @@ fun OnboardingScreen(
 
                 Spacer(modifier = Modifier.height(48.dp))
 
-                // Buttons
                 Button(
                     onClick = onLoginClick,
                     modifier = Modifier

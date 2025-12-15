@@ -74,7 +74,6 @@ fun MapScreen(
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
-        // ================== MAPA (FULLSCREEN) ==================
         if (detectionsWithLocation.isEmpty()) {
             Box(
                 modifier = Modifier
@@ -171,7 +170,6 @@ private fun OsmMap(
     detections: List<DetectionHistoryEntity>,
     onMarkerSelected: (lat: Double, lon: Double) -> Unit
 ) {
-    // Detectamos si estamos en tema oscuro
     val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
 
     AndroidView(
@@ -198,11 +196,9 @@ private fun OsmMap(
             }
         },
         update = { mapView ->
-            // --- Dark Mode Logic ---
             val tilesOverlay = mapView.overlayManager.tilesOverlay
             if (tilesOverlay != null) {
                 if (isDark) {
-                     // Invert colors to create a "Dark Mode" map
                      val inverseMatrix = floatArrayOf(
                          -1.0f, 0.0f, 0.0f, 0.0f, 255.0f,
                          0.0f, -1.0f, 0.0f, 0.0f, 255.0f,
@@ -214,14 +210,6 @@ private fun OsmMap(
                      tilesOverlay.setColorFilter(null)
                 }
             }
-            
-            // --- Markers Logic ---
-            // Clear existing markers (keep tiles overlay!)
-            // Ideally we only remove Marker objects, but clearing and re-adding tiles is risky if not careful.
-            // standard approach: mapView.overlays.clear() clears EVERYTHING including tiles.
-            // But MapView usually re-adds the tile overlay automatically or we should preserve it.
-            // Actually, `mapView.overlays.clear()` removes the TilesOverlay too!
-            // We should NOT do clear(). We should remove only Markers.
             
             val overlaysToRemove = mapView.overlays.filterIsInstance<Marker>()
             mapView.overlays.removeAll(overlaysToRemove)

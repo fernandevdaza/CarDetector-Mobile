@@ -29,13 +29,10 @@ class HistoryViewModel(
         val userId = sessionManager.getUserId()
 
         val flow = if (isAdmin) {
-            // Admin ve TODO lo que hay en la DB local
             repository.getAllDetectionHistory()
         } else if (userId != null) {
-            // Usuario normal ve solo sus detecciones
             repository.getDetectionHistoryForUser(userId)
         } else {
-            // Caso borde: no hay userId => lista vacía
             kotlinx.coroutines.flow.flowOf(emptyList())
         }
 

@@ -95,8 +95,6 @@ class ProfileViewModel(
     fun toggleTheme(isSystemDark: Boolean) {
         val currentPreference = _uiState.value.isDarkTheme
         
-        // If preference is null (system), the effective theme is isSystemDark.
-        // So if we toggle, we want the opposite of the effective theme.
         val effectiveTheme = currentPreference ?: isSystemDark
         val newTheme = !effectiveTheme
         
@@ -118,7 +116,6 @@ class ProfileViewModel(
                 }
                 val response = authRepository.updateUserData(token, email, firstName, lastName)
                 if (response.isSuccessful) {
-                    // Update local session
                     sessionManager.saveSession(
                         token = sessionManager.getToken() ?: "",
                         refreshToken = sessionManager.getRefreshToken() ?: "",

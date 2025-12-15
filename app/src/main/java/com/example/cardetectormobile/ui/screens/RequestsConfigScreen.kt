@@ -34,11 +34,6 @@ fun RequestsConfigScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-//        Text(
-//            " para usuarios:",
-//            color = MaterialTheme.colorScheme.onSurface
-//        )
-
         ProfileTextField(
             label = "Límite diario de requests para usuarios",
             value = limitInput,

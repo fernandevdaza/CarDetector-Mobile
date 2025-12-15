@@ -155,6 +155,5 @@ private fun DetectionHistoryItem(
 
 @Composable
 private fun rememberDateFormatter(): SimpleDateFormat {
-    // súper simple, en un caso real puedes ajustarlo a locale / formato bonito
     return SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
 }

@@ -15,6 +15,7 @@ Car Detector Mobile is an Android application built with Jetpack Compose that us
 
 ## Tech Stack
 
+
 ### Android
 - **Kotlin**: Primary programming language
 - **Jetpack Compose**: Modern UI toolkit for native Android

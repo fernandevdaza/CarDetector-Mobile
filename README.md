@@ -181,11 +181,8 @@ The project follows Kotlin coding conventions and uses Android best practices.
 
 ## License
 
-This project is available under the [MIT License](LICENSE) (or specify your actual license).
+This project is available under the [MIT License](LICENSE)
 
-## Contact
-
-For questions or support, please contact the repository owner.
 
 ---
 
